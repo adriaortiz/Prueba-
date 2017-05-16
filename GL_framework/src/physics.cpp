@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <math.h>
 #include <iostream>
+#include <glm\glm.hpp>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ namespace ClothMesh {
 }
 
 float separation = 0.5;
-float gravity = -9.81f; //Vertical downward speed
+float gravity = 0.f; //Vertical downward speed
 
 struct vert {
 	float posX, posY, posZ;
@@ -31,10 +32,15 @@ struct spring {
 	float originalLength;
 };
 
-struct plane {
-	float nx, ny, nz;
-	float d;
-	char planeID;
+//Variables globals del punt:
+struct wave
+{
+	glm::vec3 Position;
+	glm::vec3 Kvec;
+	float KiMod = glm::length(Kvec);
+	float Ai;
+	float Freq;
+//	float Phase;
 };
 
 bool show_test_window = false;
@@ -54,57 +60,30 @@ void GUI() {
 
 //Punteros a primeras posiciones guardadas para creación de arrays correspondientes:
 float *vertsFloat;
-plane *planesStruct;
 vert *vertsStructPrev;
 vert *vertsStruct;
+wave *wavesStruct;
 
-void initCloth(){
+void initCloth() {
 
 	int structVertsX = ClothMesh::numCols - 1;
 	int structVertsZ = ClothMesh::numRows - 1;
 
-	planesStruct = new plane[6];
 	vertsStructPrev = new vert[ClothMesh::numVerts]; //Generando array de vertices anteriores
 	vertsStruct = new vert[ClothMesh::numVerts]; //Generando array de vertices actuales
+	wavesStruct = new wave[2];
 
-	//Relleno manual de datos de planos:
+	//Inicializando waves:
 
-	//A
-	planesStruct[0].nx = 0; //Podrían calcularse los componentes de la normal creando 2 vectores sabiendo los puntos del plano y normalizando su multiplicación vectorial
-	planesStruct[0].ny = 0;
-	planesStruct[0].nz = 1;
-	planesStruct[0].d = -5; //Tambien podría calcularse utilizando la formula del plano y aislando la d
-	planesStruct[0].planeID = 'A';
-	//B
-	planesStruct[1].nx = 1;
-	planesStruct[1].ny = 0;
-	planesStruct[1].nz = 0;
-	planesStruct[1].d = -5;
-	planesStruct[1].planeID = 'B';
-	//C
-	planesStruct[2].nx = 0;
-	planesStruct[2].ny = 0;
-	planesStruct[2].nz = 1;
-	planesStruct[2].d = 5;
-	planesStruct[2].planeID = 'C';
-	//D
-	planesStruct[3].nx = 1;
-	planesStruct[3].ny = 0;
-	planesStruct[3].nz = 0;
-	planesStruct[3].d = 5;
-	planesStruct[3].planeID = 'D';
-	//E
-	planesStruct[4].nx = 0;
-	planesStruct[4].ny = 1;
-	planesStruct[4].nz = 0;
-	planesStruct[4].d = -10;
-	planesStruct[4].planeID = 'E';
-	//F
-	planesStruct[5].nx = 0;
-	planesStruct[5].ny = 1;
-	planesStruct[5].nz = 0;
-	planesStruct[5].d = 0;
-	planesStruct[5].planeID = 'F';
+	wavesStruct[0].Position = glm::vec3(0.0f,0.0f,0.0f);
+	wavesStruct[0].Kvec = glm::vec3(1.0f, 0.0f, 0.0f);
+	wavesStruct[0].Ai = 0.5f;
+	wavesStruct[0].Freq = 2.0f;
+
+	wavesStruct[1].Position = glm::vec3(0.0f, 0.0f, 0.0f);
+	wavesStruct[1].Kvec = glm::vec3(0.0f, 0.0f, -3.0f);
+	wavesStruct[1].Ai = 0.25f;
+	wavesStruct[1].Freq = 4.0f;
 
 	//Dando posicion inicial a cada vertice (Formar una malla):
 
@@ -163,23 +142,6 @@ bool isColliding(plane thePlane, vert vertexCoords, vert prevVertexCoords) { //F
 	else return false;
 }
 
-void collidePlane(plane thePlane, vert &vertexData) { //Función de rebote con elasticidad, debería aplicarse a un vertice que ha colisionado con un plano
-
-	float e = 0.2; //Coeficiente de rebote
-	
-	float PVPProduct = dotPPos(thePlane, vertexData); //Plane Vertex Position Product
-
-	vertexData.posX = vertexData.posX -(1 + e) * (PVPProduct + thePlane.d) * thePlane.nx;
-	vertexData.posY = vertexData.posY - (1 + e) * (PVPProduct + thePlane.d) * thePlane.ny;
-	vertexData.posZ = vertexData.posZ - (1 + e) * (PVPProduct + thePlane.d) * thePlane.nz;
-
-	float PVVProduct = dotPVel(thePlane, vertexData); //Plane Vertex Velocity Product
-
-	vertexData.velX = vertexData.velX - (1 + e) * PVVProduct * thePlane.nx;
-	vertexData.velY = vertexData.velY - (1 + e) * PVVProduct * thePlane.ny;
-	vertexData.velZ = vertexData.velZ - (1 + e) * PVVProduct * thePlane.nz;
-}
-
 void updateCloth(float dt) {
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
@@ -199,15 +161,6 @@ void updateCloth(float dt) {
 			vertsStruct[i].velX = vertsStruct[i].velX + 0.f * dt; //Vf = Vi + dt * Fi/m
 			vertsStruct[i].velY = vertsStruct[i].velY + gravity * dt;
 			vertsStruct[i].velZ = vertsStruct[i].velZ + 0.f * dt;
-
-			//Comprobar colision
-			for (int j = 0; j < 6; j++) {
-				//No entiendo porque, pero el plano F siempre da 1 = true (colisiona constantemente) despues de atravesar el plano por primera vez, no importa donde este la malla...
-				//cout << isColliding(planesStruct[j], vertsStruct[i], vertsStructPrev[i]) << endl;
-				if (isColliding(planesStruct[j], vertsStruct[i], vertsStructPrev[i]) == true) { //Si hay colision
-					collidePlane(planesStruct[j], vertsStruct[i]); //Mirror de la velocidad y la posición
-				}
-			}
 		}
 	}
 
@@ -238,5 +191,4 @@ void PhysicsCleanup() {
 	delete[] vertsStruct;
 	delete[] vertsStructPrev;
 	delete[] vertsFloat;
-	delete[] planesStruct;
 }
