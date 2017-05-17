@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <glm\glm.hpp>
+#include <vector>
 
 using namespace std;
 
@@ -62,7 +63,9 @@ void GUI() {
 float *vertsFloat;
 vert *vertsStructPrev;
 vert *vertsStruct;
-wave *wavesStruct;
+vert *vertsFirstStruct;
+
+vector <wave> Waves;
 
 void initCloth() {
 
@@ -71,19 +74,27 @@ void initCloth() {
 
 	vertsStructPrev = new vert[ClothMesh::numVerts]; //Generando array de vertices anteriores
 	vertsStruct = new vert[ClothMesh::numVerts]; //Generando array de vertices actuales
-	wavesStruct = new wave[2];
+	vertsFirstStruct = new vert[ClothMesh::numVerts]; //Generando array de primeros vertices (Estado inicial)
 
 	//Inicializando waves:
 
-	wavesStruct[0].Position = glm::vec3(0.0f,0.0f,0.0f);
-	wavesStruct[0].Kvec = glm::vec3(1.0f, 0.0f, 0.0f);
-	wavesStruct[0].Ai = 0.5f;
-	wavesStruct[0].Freq = 2.0f;
+	wave wave1;
 
-	wavesStruct[1].Position = glm::vec3(0.0f, 0.0f, 0.0f);
-	wavesStruct[1].Kvec = glm::vec3(0.0f, 0.0f, -3.0f);
-	wavesStruct[1].Ai = 0.25f;
-	wavesStruct[1].Freq = 4.0f;
+	wave1.Position = glm::vec3(0.0f,0.0f,0.0f);
+	wave1.Kvec = glm::vec3(1.0f, 0.0f, 0.0f);
+	wave1.Ai = 0.5f;
+	wave1.Freq = 2.0f;
+
+	wave wave2;
+
+	wave2.Position = glm::vec3(0.0f, 0.0f, 0.0f);
+	wave2.Kvec = glm::vec3(0.0f, 0.0f, -3.0f);
+	wave2.Ai = 0.25f;
+	wave2.Freq = 4.0f;
+
+	Waves.push_back(wave1);
+	Waves.push_back(wave2);
+
 
 	//Dando posicion inicial a cada vertice (Formar una malla):
 
@@ -94,6 +105,11 @@ void initCloth() {
 			vertsStruct[v].posX = -4.f + separation * j;
 			vertsStruct[v].posY = 7.f;
 			vertsStruct[v].posZ = -4.f + separation * i;
+
+			vertsFirstStruct[v].posX = -4.f + separation * j;
+			vertsFirstStruct[v].posY = 7.f;
+			vertsFirstStruct[v].posZ = -4.f + separation * i;
+
 			v++;
 		}
 	}
@@ -115,53 +131,39 @@ void initCloth() {
 	}
 }
 
-float dotPPos(plane thePlane, vert vertexCoords) { //Función dot product entre plano y coordenadas de vertice
-	
-	float x = thePlane.nx * vertexCoords.posX;
-	float y = thePlane.ny * vertexCoords.posY;
-	float z = thePlane.nz * vertexCoords.posZ;
-
-	float result = x + y + z;
-	return result;
-}
-
-float dotPVel(plane thePlane, vert vertexCoords) { //Función dot product entre plano y componentes de velocidad de vertice
-
-	float x = thePlane.nx * vertexCoords.velX;
-	float y = thePlane.ny * vertexCoords.velY;
-	float z = thePlane.nz * vertexCoords.velZ;
-
-	float result = x + y + z;
-	return result;
-}
-
-bool isColliding(plane thePlane, vert vertexCoords, vert prevVertexCoords) { //Función comprobadora de colisión entre plano y vertice
-
-	//Formula de colision:
-	if ((dotPPos(thePlane, prevVertexCoords) + thePlane.d) * (dotPPos(thePlane, vertexCoords) + thePlane.d) <= 0) return true;
-	else return false;
-}
+float fullTime;
 
 void updateCloth(float dt) {
 
+	fullTime += dt;
+
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
-		if (i != 0 && i != 13) {
 
 			//Guardado de posiciones actuales como anteriores:
 			vertsStructPrev[i].posX = vertsStruct[i].posX;
 			vertsStructPrev[i].posY = vertsStruct[i].posY;
 			vertsStructPrev[i].posZ = vertsStruct[i].posZ;
 
-			//Actualizar posicion:
-			vertsStruct[i].posX = vertsStruct[i].posX + vertsStruct[i].velX * dt;
-			vertsStruct[i].posY = vertsStruct[i].posY + vertsStruct[i].velY * dt;
-			vertsStruct[i].posZ = vertsStruct[i].posZ + vertsStruct[i].velZ * dt;
+			//Actualizar posicion mediante formula de Gerstner:
+
+			float a, b, c, x, y, z;
+																					//Cambiar KVEC a todas sus componentes por el struct de vertices pasado a VEC3
+			a = glm::vec3(Waves[0].Kvec / Waves[0].KiMod).x * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec.x, vertsFirstStruct[i].posX) - Waves[0].Freq *fullTime);
+			b = Waves[0].Ai * glm::cos(glm::dot(Waves[0].Kvec.y, vertsFirstStruct[i].posY) - Waves[0].Freq);
+			c = glm::vec3(Waves[0].Kvec / Waves[0].KiMod).z * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec.z, vertsFirstStruct[i].posZ) - Waves[0].Freq);
+
+			x = glm::vec3(Waves[1].Kvec / Waves[1].KiMod).x * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec.x, vertsFirstStruct[i].posX) - Waves[1].Freq);
+			y = Waves[0].Ai * glm::cos(glm::dot(Waves[1].Kvec.y, vertsFirstStruct[i].posY) - Waves[1].Freq);
+			z = glm::vec3(Waves[1].Kvec / Waves[1].KiMod).z * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec.z, vertsFirstStruct[i].posZ) - Waves[1].Freq);
+
+			vertsStruct[i].posX = vertsFirstStruct[i].posX - a + x; //a + x es el sumatori
+			vertsStruct[i].posY = b + y;
+			vertsStruct[i].posZ = vertsFirstStruct[i].posZ - c + z;
 
 			//Actualizar velocidad:
 			vertsStruct[i].velX = vertsStruct[i].velX + 0.f * dt; //Vf = Vi + dt * Fi/m
 			vertsStruct[i].velY = vertsStruct[i].velY + gravity * dt;
 			vertsStruct[i].velZ = vertsStruct[i].velZ + 0.f * dt;
-		}
 	}
 
 	//Conversor de posiciones a array de floats:
