@@ -22,9 +22,7 @@ float separation = 0.5;
 float gravity = 0.f; //Vertical downward speed
 
 struct vert {
-	float posX, posY, posZ;
-	float velX, velY, velZ;
-	int id;
+	glm::vec3 position;
 };
 
 struct spring {
@@ -38,10 +36,10 @@ struct wave
 {
 	glm::vec3 Position;
 	glm::vec3 Kvec;
-	float KiMod = glm::length(Kvec);
+	float KiMod;
 	float Ai;
 	float Freq;
-//	float Phase;
+	float Phase;
 };
 
 bool show_test_window = false;
@@ -53,7 +51,7 @@ void GUI() {
 	}
 
 	// ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-	if(show_test_window) {
+	if (show_test_window) {
 		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
 		ImGui::ShowTestWindow(&show_test_window);
 	}
@@ -61,7 +59,6 @@ void GUI() {
 
 //Punteros a primeras posiciones guardadas para creación de arrays correspondientes:
 float *vertsFloat;
-vert *vertsStructPrev;
 vert *vertsStruct;
 vert *vertsFirstStruct;
 
@@ -72,25 +69,28 @@ void initCloth() {
 	int structVertsX = ClothMesh::numCols - 1;
 	int structVertsZ = ClothMesh::numRows - 1;
 
-	vertsStructPrev = new vert[ClothMesh::numVerts]; //Generando array de vertices anteriores
 	vertsStruct = new vert[ClothMesh::numVerts]; //Generando array de vertices actuales
 	vertsFirstStruct = new vert[ClothMesh::numVerts]; //Generando array de primeros vertices (Estado inicial)
 
-	//Inicializando waves:
+													  //Inicializando waves:
 
 	wave wave1;
 
-	wave1.Position = glm::vec3(0.0f,0.0f,0.0f);
+	wave1.Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	wave1.Kvec = glm::vec3(1.0f, 0.0f, 0.0f);
+	wave1.KiMod = glm::length(wave1.Kvec);
 	wave1.Ai = 0.5f;
 	wave1.Freq = 2.0f;
+	wave1.Phase = 0.0f;
 
 	wave wave2;
 
-	wave2.Position = glm::vec3(0.0f, 0.0f, 0.0f);
+	wave2.Position = glm::vec3(20.0f, 20.0f, 20.0f);
 	wave2.Kvec = glm::vec3(0.0f, 0.0f, -3.0f);
+	wave2.KiMod = glm::length(wave2.Kvec);
 	wave2.Ai = 0.25f;
 	wave2.Freq = 4.0f;
+	wave2.Phase = 0.0f;
 
 	Waves.push_back(wave1);
 	Waves.push_back(wave2);
@@ -102,32 +102,25 @@ void initCloth() {
 
 	for (int i = 0; i < ClothMesh::numRows; i++) { //columnas
 		for (int j = 0; j < ClothMesh::numCols; j++) { //filas
-			vertsStruct[v].posX = -4.f + separation * j;
-			vertsStruct[v].posY = 7.f;
-			vertsStruct[v].posZ = -4.f + separation * i;
+			vertsStruct[v].position.x = -4.f + separation * j;
+			vertsStruct[v].position.y = 7.f;
+			vertsStruct[v].position.z = -4.f + separation * i;
 
-			vertsFirstStruct[v].posX = -4.f + separation * j;
-			vertsFirstStruct[v].posY = 7.f;
-			vertsFirstStruct[v].posZ = -4.f + separation * i;
+			vertsFirstStruct[v].position.x = -4.f + separation * j;
+			vertsFirstStruct[v].position.y = 7.f;
+			vertsFirstStruct[v].position.z = -4.f + separation * i;
 
 			v++;
 		}
-	}
-
-	//Velocidad inicial de cada vertice
-	for (int i = 0; i < ClothMesh::numVerts; i++) {
-		vertsStruct[i].velX = 0.f;
-		vertsStruct[i].velY = 0.f;
-		vertsStruct[i].velZ = 0.f;
 	}
 
 	//Conversor de posiciones a array de floats:
 	vertsFloat = new float[ClothMesh::numVerts * 3];
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
-		vertsFloat[i * 3 + 0] = vertsStruct[i].posX;
-		vertsFloat[i * 3 + 1] = vertsStruct[i].posY;
-		vertsFloat[i * 3 + 2] = vertsStruct[i].posZ;
+		vertsFloat[i * 3 + 0] = vertsStruct[i].position.x;
+		vertsFloat[i * 3 + 1] = vertsStruct[i].position.y;
+		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z;
 	}
 }
 
@@ -137,41 +130,43 @@ void updateCloth(float dt) {
 
 	fullTime += dt;
 
+	cout << fullTime << endl;
+
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
 
-			//Guardado de posiciones actuales como anteriores:
-			vertsStructPrev[i].posX = vertsStruct[i].posX;
-			vertsStructPrev[i].posY = vertsStruct[i].posY;
-			vertsStructPrev[i].posZ = vertsStruct[i].posZ;
+		//Actualizar posicion mediante formula de Gerstner:
 
-			//Actualizar posicion mediante formula de Gerstner:
+		glm::vec3 waveInfluence1;
+		glm::vec3 waveInfluence2;
 
-			float a, b, c, x, y, z;
-																					//Cambiar KVEC a todas sus componentes por el struct de vertices pasado a VEC3
-			a = glm::vec3(Waves[0].Kvec / Waves[0].KiMod).x * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec.x, vertsFirstStruct[i].posX) - Waves[0].Freq *fullTime);
-			b = Waves[0].Ai * glm::cos(glm::dot(Waves[0].Kvec.y, vertsFirstStruct[i].posY) - Waves[0].Freq);
-			c = glm::vec3(Waves[0].Kvec / Waves[0].KiMod).z * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec.z, vertsFirstStruct[i].posZ) - Waves[0].Freq);
+		float waveInfluenceY1;
+		float waveInfluenceY2;
 
-			x = glm::vec3(Waves[1].Kvec / Waves[1].KiMod).x * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec.x, vertsFirstStruct[i].posX) - Waves[1].Freq);
-			y = Waves[0].Ai * glm::cos(glm::dot(Waves[1].Kvec.y, vertsFirstStruct[i].posY) - Waves[1].Freq);
-			z = glm::vec3(Waves[1].Kvec / Waves[1].KiMod).z * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec.z, vertsFirstStruct[i].posZ) - Waves[1].Freq);
+		//Cada formula de oscilacion de cada wave, individualmente:
+		waveInfluence1 = (Waves[0].Kvec / Waves[0].KiMod) * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * fullTime) + Waves[0].Phase);
+		waveInfluence2 = (Waves[1].Kvec / Waves[1].KiMod) * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * fullTime) + Waves[1].Phase);
 
-			vertsStruct[i].posX = vertsFirstStruct[i].posX - a + x; //a + x es el sumatori
-			vertsStruct[i].posY = b + y;
-			vertsStruct[i].posZ = vertsFirstStruct[i].posZ - c + z;
+		waveInfluenceY1 = Waves[0].Ai * glm::cos(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * fullTime) + Waves[0].Phase);
+		waveInfluenceY2 = Waves[1].Ai * glm::cos(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * fullTime) + Waves[1].Phase);
 
-			//Actualizar velocidad:
-			vertsStruct[i].velX = vertsStruct[i].velX + 0.f * dt; //Vf = Vi + dt * Fi/m
-			vertsStruct[i].velY = vertsStruct[i].velY + gravity * dt;
-			vertsStruct[i].velZ = vertsStruct[i].velZ + 0.f * dt;
+		//Debug:
+		//cout << Waves[0].Kvec.x << " " << Waves[0].Kvec.y << " " << Waves[0].Kvec.z << endl;
+		//cout << Waves[0].KiMod << endl;
+
+		//Calcular nuevas posiciones mediante formula de Gerstner:
+		vertsStruct[i].position = vertsFirstStruct[i].position - (waveInfluence1 + waveInfluence2);
+
+		//Esta posicion sobrescribe la componente calculada anteriormente (que no era valida)
+		vertsStruct[i].position.y = waveInfluenceY1 + waveInfluenceY2;
+
 	}
 
 	//Conversor de posiciones a array de floats:
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
-		vertsFloat[i * 3 + 0] = vertsStruct[i].posX; //x
-		vertsFloat[i * 3 + 1] = vertsStruct[i].posY; //y
-		vertsFloat[i * 3 + 2] = vertsStruct[i].posZ; //z
+		vertsFloat[i * 3 + 0] = vertsStruct[i].position.x; //x
+		vertsFloat[i * 3 + 1] = vertsStruct[i].position.y + 5.0f; //y
+		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z; //z
 	}
 }
 
@@ -191,6 +186,5 @@ void PhysicsUpdate(float dt) {
 
 void PhysicsCleanup() {
 	delete[] vertsStruct;
-	delete[] vertsStructPrev;
 	delete[] vertsFloat;
 }
