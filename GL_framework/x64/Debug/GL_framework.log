@@ -1,4 +1,5 @@
-﻿  physics.cpp
+﻿cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
+  physics.cpp
   GL_framework.vcxproj -> C:\Users\dcalaf\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.exe
   GL_framework.vcxproj -> C:\Users\dcalaf\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
   The filename, directory name, or volume label syntax is incorrect.

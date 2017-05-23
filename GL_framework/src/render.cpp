@@ -354,7 +354,7 @@ GLuint sphereProgram;
 float radius;
 
 float mass = 1;
-glm::vec3 CoM(0, 8, 0);
+glm::vec3 CoM;
 
 glm::mat4 objMat;
 

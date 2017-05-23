@@ -140,10 +140,9 @@ void initCloth() {
 
 float fullTime;
 
-
 void updateSphereStuff(float dt) {
 
-	//Actualizar centro de massa:
+	//Actualizar centro de massa (Posicion):
 	glm::vec3 futureCoM = Sphere::CoM + dt * Sphere::velocity;
 	//Actualizar velocidad:
 	glm::vec3 futureVel = Sphere::velocity + dt*gravity/Sphere::mass;
@@ -197,18 +196,14 @@ void updateClothStuff(float dt) {
 	}
 }
 
-
-
 void PhysicsInit() {
 
 	initCloth();
 
-	Sphere::setupSphere(Sphere::CoM, 1);
-	Sphere::velocity = glm::vec3(0.f, 0.f, 0.f);
-
-	ClothMesh::updateClothMesh(vertsFloat);
-
+	Sphere::setupSphere(glm::vec3(0.0f, 8.0f, 0.0f), 1);
+	Sphere::velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 }
+
 void PhysicsUpdate(float dt) {
 
 	updateClothStuff(dt);
