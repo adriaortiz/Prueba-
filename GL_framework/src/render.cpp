@@ -353,12 +353,17 @@ GLuint sphereShaders[3];
 GLuint sphereProgram;
 float radius;
 
+glm::vec3 CoM(0, 8, 0);
+
+glm::mat4 objMat;
+
 const char* sphere_vertShader =
 "#version 330\n\
 in vec3 in_Position;\n\
 uniform mat4 mv_Mat;\n\
+uniform mat4 obj_Mat; \n\
 void main() {\n\
-	gl_Position = mv_Mat * vec4(in_Position, 1.0);\n\
+	gl_Position = mv_Mat * obj_Mat * vec4(in_Position, 1.0);\n\
 }";
 const char* sphere_geomShader =
 "#version 330\n\
@@ -470,6 +475,7 @@ void drawSphere() {
 	glUseProgram(sphereProgram);
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(_MVP));
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(_modelView));
+	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "obj_Mat"), 1, GL_FALSE, glm::value_ptr(objMat));
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "projMat"), 1, GL_FALSE, glm::value_ptr(_projection));
 	glUniform4f(glGetUniformLocation(sphereProgram, "color"), 0.6f, 0.1f, 0.1f, 1.f);
 	glUniform1f(glGetUniformLocation(sphereProgram, "radius"), Sphere::radius);

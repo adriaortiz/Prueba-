@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 #include <vector>
 
 using namespace std;
@@ -18,8 +19,20 @@ namespace ClothMesh {
 	extern void drawClothMesh();
 }
 
+namespace Sphere {
+	extern glm::vec3 CoM;
+	extern glm::mat4 objMat;
+	extern void updateSphere(glm::vec3 pos, float radius);
+	extern void setupSphere(glm::vec3 pos, float radius);
+	glm::vec3 velocity (0.f,0.f,0.f);
+} 
+
+
+glm::mat4 transformationMatrix;
 float separation = 0.5;
-float gravity = 0.f; //Vertical downward speed
+glm::vec3 gravity (0, -9.81f, 0); //Vertical downward speed
+
+float OffsetX, OffsetY = 5.0, OffsetZ;
 
 struct vert {
 	glm::vec3 position;
@@ -126,11 +139,21 @@ void initCloth() {
 
 float fullTime;
 
+
+//void updateSphere(float dt) {
+//
+//	
+//	//Actualizar centro de massa:
+//	Sphere::CoM = Sphere::CoM + dt * Sphere::velocity;
+//
+//	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
+//	Sphere::objMat = transformationMatrix;
+//
+//}
+
 void updateCloth(float dt) {
 
 	fullTime += dt;
-
-	cout << fullTime << endl;
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
 
@@ -164,15 +187,18 @@ void updateCloth(float dt) {
 	//Conversor de posiciones a array de floats:
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
-		vertsFloat[i * 3 + 0] = vertsStruct[i].position.x; //x
-		vertsFloat[i * 3 + 1] = vertsStruct[i].position.y + 5.0f; //y
-		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z; //z
+		vertsFloat[i * 3 + 0] = vertsStruct[i].position.x + OffsetX; //x
+		vertsFloat[i * 3 + 1] = vertsStruct[i].position.y + OffsetY; //y
+		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z + OffsetZ; //z
 	}
 }
 
 void PhysicsInit() {
 
 	initCloth();
+
+	Sphere::setupSphere(Sphere::CoM, 1);
+	Sphere::velocity = glm::vec3(0.f, 0.f, 0.f);
 
 	ClothMesh::updateClothMesh(vertsFloat);
 
@@ -181,6 +207,14 @@ void PhysicsUpdate(float dt) {
 
 	updateCloth(dt);
 
+	Sphere::velocity = Sphere::velocity + dt*gravity;
+	//Actualizar centro de massa:
+	Sphere::CoM = Sphere::CoM + dt * Sphere::velocity;
+
+	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
+	Sphere::objMat = transformationMatrix;
+
+	Sphere::updateSphere(Sphere::CoM, 1);
 	ClothMesh::updateClothMesh(vertsFloat);
 }
 

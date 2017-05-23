@@ -4,7 +4,7 @@
 #include <cstdio>
 
 //Boolean variables allow to show/hide the primitives
-bool renderSphere = false;
+bool renderSphere = true;
 bool renderCapsule = false;
 bool renderParticles = false;
 bool renderCloth = true;
@@ -50,6 +50,7 @@ void cleanupPrims() {
 
 void renderPrims() {
 	if (renderSphere)
+		Sphere::setupSphere(glm::vec3(0.f, 8.f, 0.f), 1.f);
 		Sphere::drawSphere();
 	if (renderCapsule)
 		Capsule::drawCapsule();
