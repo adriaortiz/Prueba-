@@ -1,6 +1,6 @@
-﻿cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
-  physics.cpp
-  GL_framework.vcxproj -> C:\Users\dcalaf\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.exe
-  GL_framework.vcxproj -> C:\Users\dcalaf\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
-  The filename, directory name, or volume label syntax is incorrect.
-  0 File(s) copied
+﻿  physics.cpp
+z:\work\pràctiques mecànica\prueba-\gl_framework\src\physics.cpp(146): warning C4305: 'initializing': truncation from 'double' to 'float'
+  GL_framework.vcxproj -> Z:\Work\Pràctiques Mecànica\Prueba-\GL_framework\x64\Debug\GL_framework.exe
+  GL_framework.vcxproj -> Z:\Work\Pràctiques Mecànica\Prueba-\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
+  0 archivo(s) copiado(s)
+  El nombre de archivo, el nombre de directorio o la sintaxis de la etiqueta del volumen no son correctos.

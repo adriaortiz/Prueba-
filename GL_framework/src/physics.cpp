@@ -26,6 +26,7 @@ namespace Sphere {
 	extern void updateSphere(glm::vec3 pos, float radius);
 	extern void setupSphere(glm::vec3 pos, float radius);
 	glm::vec3 velocity (0.f,0.f,0.f);
+	extern float radius;
 } 
 
 
@@ -137,13 +138,52 @@ void initCloth() {
 		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z;
 	}
 }
-
+//Variables para clacular la Buoyance
 float fullTime;
+glm::vec3 flotation;
+glm::vec3 ForceSum;
+glm::vec3 Y(0, 1, 0);
+float Density = 10, G_plus = 9.81, Sub_Vol; //G_Plus es la gravetad positiva
+
+// Los cuatro puntos mas cercanios al centro de masas de la esfera
+glm::vec3 Close_1;
+glm::vec3 Close_2;
+glm::vec3 Close_3;
+glm::vec3 Close_4;
+
+void Finder() {
+	
+
+	for (int i = 0; i < ClothMesh::numVerts; i++) {
+
+		vertsStruct[i].position ;
+	
+	}
+	
+
+}
+
 
 void updateSphereStuff(float dt) {
-
+	float Mitja;
 	//Actualizar centro de massa (Posicion):
 	glm::vec3 futureCoM = Sphere::CoM + dt * Sphere::velocity;
+
+	
+	Finder();
+	Mitja = (Close_1.y + Close_2.y + Close_3.y + Close_4.y) / 4;
+
+	if ((Sphere::CoM.y - Sphere::radius) >= Mitja) {
+		flotation = glm::vec3(0.f, 0.f, 0.f);
+	}
+	else {
+		//Sumatorio de Fuerzas
+	//	cout << "done" << endl;
+		Sub_Vol = (Sphere::radius * Sphere::radius) * (Mitja - (Sphere::CoM.y - Sphere::radius));
+		flotation = (Density * G_plus *  Sub_Vol) * Y;
+	}
+	ForceSum = gravity + flotation;
+	//cout << ForceSum.x << " " << ForceSum.y << " " << ForceSum.z << endl;
 	//Actualizar velocidad:
 	glm::vec3 futureVel = Sphere::velocity + dt*gravity/Sphere::mass;
 
