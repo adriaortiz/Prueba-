@@ -20,6 +20,7 @@ namespace ClothMesh {
 }
 
 namespace Sphere {
+	extern float mass;
 	extern glm::vec3 CoM;
 	extern glm::mat4 objMat;
 	extern void updateSphere(glm::vec3 pos, float radius);
@@ -140,18 +141,21 @@ void initCloth() {
 float fullTime;
 
 
-//void updateSphere(float dt) {
-//
-//	
-//	//Actualizar centro de massa:
-//	Sphere::CoM = Sphere::CoM + dt * Sphere::velocity;
-//
-//	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
-//	Sphere::objMat = transformationMatrix;
-//
-//}
+void updateSphereStuff(float dt) {
 
-void updateCloth(float dt) {
+	//Actualizar centro de massa:
+	glm::vec3 futureCoM = Sphere::CoM + dt * Sphere::velocity;
+	//Actualizar velocidad:
+	glm::vec3 futureVel = Sphere::velocity + dt*gravity/Sphere::mass;
+
+	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
+	Sphere::objMat = transformationMatrix;
+
+	Sphere::CoM = futureCoM;
+	Sphere::velocity = futureVel;
+}
+
+void updateClothStuff(float dt) {
 
 	fullTime += dt;
 
@@ -193,6 +197,8 @@ void updateCloth(float dt) {
 	}
 }
 
+
+
 void PhysicsInit() {
 
 	initCloth();
@@ -205,14 +211,8 @@ void PhysicsInit() {
 }
 void PhysicsUpdate(float dt) {
 
-	updateCloth(dt);
-
-	Sphere::velocity = Sphere::velocity + dt*gravity;
-	//Actualizar centro de massa:
-	Sphere::CoM = Sphere::CoM + dt * Sphere::velocity;
-
-	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
-	Sphere::objMat = transformationMatrix;
+	updateClothStuff(dt);
+	updateSphereStuff(dt);
 
 	Sphere::updateSphere(Sphere::CoM, 1);
 	ClothMesh::updateClothMesh(vertsFloat);
