@@ -32,7 +32,8 @@ namespace Sphere {
 
 glm::mat4 transformationMatrix;
 float separation = 0.5;
-glm::vec3 gravity (0, -9.81f, 0); //Vertical downward speed
+float GravedadEnY = -9.81;
+glm::vec3 gravity (0, GravedadEnY, 0); //Vertical downward speed
 
 float OffsetX, OffsetY = 5.0, OffsetZ;
 
@@ -51,6 +52,7 @@ struct spring {
 //Variables globals del punt:
 struct wave
 {
+public:
 	glm::vec3 Position;
 	glm::vec3 Kvec;
 	float KiMod;
@@ -59,12 +61,24 @@ struct wave
 	float Phase;
 };
 
+wave wave1;
+
+
+
 bool show_test_window = false;
+
 void GUI() {
 	{	//FrameRate
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("Distancias entre vertices: ");
+		ImGui::DragFloat("Wave 1 Kvec X", &wave1.Kvec.x, 1.f, 0.0f, 5.0f);
+		ImGui::DragFloat("Wave1 Ai", &wave1.Ai, 0.5f, 0.0f, 20.0f);			//Nom a dins del GUI, Que modifica, Valor inicial, Valor mínim, Valor máxim
+		ImGui::DragFloat("Wave1 Freq", &wave1.Freq, 10.0f, 5.0f, 20.0f);		//2.0,1.0,10.0
+		ImGui::DragFloat("Wave1 Phase", &wave1.Phase, 0.0f, 0.0f, 1.0f);
 
-		//TODO
+		ImGui::Text("Gravedad: ");
+		ImGui::DragFloat("Gravedad", &GravedadEnY, -9.81, -20.0, 0.0);						//Gravetat en y, valor inicial, valor mínim, valor máxim
+																							//TODO
 	}
 
 	// ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
@@ -73,6 +87,34 @@ void GUI() {
 		ImGui::ShowTestWindow(&show_test_window);
 	}
 }
+
+
+/*void GUI() {
+	{	//FrameRate
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		
+
+		//ImGui::DragFloat("Dist second-Link", &D_2Distance, 0.5f, 0.0f, 1.0f);
+		//ImGui::DragFloat("Max % links", &Max_Distance, 0.1f, 0.0f, 1.0f);					//El % maxim qn
+		//ImGui::DragFloat("Dist Vertex X inicial", &InitX, 0.5f, 0.0f, 0.6f);
+		//ImGui::DragFloat("Dist Vertex Z inicial", &InitZ, 0.5f, 0.0f, 0.6f);
+
+		
+
+		//Recorda que si son constants, no es poden modificar!
+		//TODO
+	}
+
+	// ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+	if (show_test_window) {
+		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+		ImGui::ShowTestWindow(&show_test_window);
+	}
+}*/
+
+
+
+
 
 //Punteros a primeras posiciones guardadas para creación de arrays correspondientes:
 float *vertsFloat;
@@ -140,6 +182,8 @@ void initCloth() {
 		vertsFloat[i * 3 + 2] = vertsStruct[i].position.z;
 	}
 }
+
+
 //Variables para clacular la Buoyance
 float fullTime;
 glm::vec3 flotation;

@@ -1,6 +1,25 @@
+<<<<<<< HEAD
 ﻿  physics.cpp
 z:\work\pràctiques mecànica\prueba-\gl_framework\src\physics.cpp(148): warning C4305: 'initializing': truncation from 'double' to 'float'
   GL_framework.vcxproj -> Z:\Work\Pràctiques Mecànica\Prueba-\GL_framework\x64\Debug\GL_framework.exe
   GL_framework.vcxproj -> Z:\Work\Pràctiques Mecànica\Prueba-\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
   0 archivo(s) copiado(s)
   El nombre de archivo, el nombre de directorio o la sintaxis de la etiqueta del volumen no son correctos.
+=======
+﻿  render_prims.cpp
+  render.cpp
+  physics.cpp
+c:\users\aortiz\desktop\agua\agua\gl_framework\src\physics.cpp(35): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\aortiz\desktop\agua\agua\gl_framework\src\physics.cpp(78): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\aortiz\desktop\agua\agua\gl_framework\src\physics.cpp(190): warning C4305: 'initializing': truncation from 'double' to 'float'
+  main.cpp
+  imgui_impl_glfw_gl3.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui.cpp
+  Generating Code...
+  GL_framework.vcxproj -> C:\Users\aortiz\Desktop\Agua\Agua\GL_framework\x64\Debug\GL_framework.exe
+  GL_framework.vcxproj -> C:\Users\aortiz\Desktop\Agua\Agua\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
+  The filename, directory name, or volume label syntax is incorrect.
+  0 File(s) copied
+>>>>>>> master
