@@ -38,6 +38,8 @@ float OffsetX, OffsetY = 5.0, OffsetZ;
 
 struct vert {
 	glm::vec3 position;
+	glm::vec3 DistVec;
+	float DistMod;
 };
 
 struct spring {
@@ -142,24 +144,71 @@ void initCloth() {
 float fullTime;
 glm::vec3 flotation;
 glm::vec3 ForceSum;
-glm::vec3 Y(0, 1, 0);
-float Density = 10, G_plus = 9.81, Sub_Vol; //G_Plus es la gravetad positiva
+glm::vec3 Y(0, 0.5, 0);
+float Density = 2, G_plus = 9.81, Sub_Vol; //G_Plus es la gravetad positiva
 
 // Los cuatro puntos mas cercanios al centro de masas de la esfera
-glm::vec3 Close_1;
-glm::vec3 Close_2;
-glm::vec3 Close_3;
-glm::vec3 Close_4;
+vert Close_1;
+vert Close_2;
+vert Close_3;
+vert Close_4;
 
 void Finder() {
-	
+	Close_1 = vertsStruct[0];
+	Close_2 = vertsStruct[1];
+	Close_3 = vertsStruct[2];
+	Close_4 = vertsStruct[3];
 
 	for (int i = 0; i < ClothMesh::numVerts; i++) {
+		vertsStruct[i].DistVec = glm::abs(Sphere::CoM - vertsStruct[i].position);
+		vertsStruct[i].DistMod = glm::length(vertsStruct[i].DistVec);
+		if(i > 3)
+		{
+			vert prov;
+			vert aux;
+			if(vertsStruct[i].DistMod < Close_1.DistMod)
+			{
+				prov = Close_1;
+				Close_1 = vertsStruct[i];
+				if (prov.DistMod < Close_2.DistMod)
+					aux = Close_2;
+					Close_2 = prov;
+					if (aux.DistMod < Close_3.DistMod)
+						prov = Close_3;
+						Close_3 = aux;
+						if (prov.DistMod < Close_4.DistMod)
+							Close_4 = prov;
 
-		vertsStruct[i].position ;
-	
+			}
+			else if (vertsStruct[i].DistMod < Close_2.DistMod)
+			{
+				prov = Close_2;
+				Close_2 = vertsStruct[i];
+				if (prov.DistMod < Close_3.DistMod)
+					aux = Close_3;
+					Close_3 = prov;
+						if (aux.DistMod < Close_4.DistMod)
+							Close_4 = aux;
+			}
+			else if (vertsStruct[i].DistMod < Close_3.DistMod)
+			{
+				aux = Close_3;
+				Close_3 = vertsStruct[i];
+				if (aux.DistMod < Close_4.DistMod)
+					Close_4 = aux;
+			}
+			else if (vertsStruct[i].DistMod < Close_4.DistMod)
+			{
+				Close_4 = vertsStruct[i];
+			}
+		}
+		//vertsStruct[i].position ;
 	}
 	
+	//for () {
+	//
+	//}
+
 
 }
 
@@ -171,21 +220,22 @@ void updateSphereStuff(float dt) {
 
 	
 	Finder();
-	Mitja = (Close_1.y + Close_2.y + Close_3.y + Close_4.y) / 4;
+	Mitja = (Close_1.position.y + Close_2.position.y + Close_3.position.y + Close_4.position.y) / 4;
+	cout << Close_1.position.y << " " << Close_2.position.y << " " << Close_3.position.y << " " << Close_4.position.y << endl;
 
 	if ((Sphere::CoM.y - Sphere::radius) >= Mitja) {
 		flotation = glm::vec3(0.f, 0.f, 0.f);
 	}
 	else {
 		//Sumatorio de Fuerzas
-	//	cout << "done" << endl;
+		//cout << "done" << endl;
 		Sub_Vol = (Sphere::radius * Sphere::radius) * (Mitja - (Sphere::CoM.y - Sphere::radius));
 		flotation = (Density * G_plus *  Sub_Vol) * Y;
 	}
 	ForceSum = gravity + flotation;
 	//cout << ForceSum.x << " " << ForceSum.y << " " << ForceSum.z << endl;
 	//Actualizar velocidad:
-	glm::vec3 futureVel = Sphere::velocity + dt*gravity/Sphere::mass;
+	glm::vec3 futureVel = Sphere::velocity + dt*ForceSum/Sphere::mass;
 
 	transformationMatrix = glm::translate(transformationMatrix, Sphere::CoM);
 	Sphere::objMat = transformationMatrix;
