@@ -353,7 +353,7 @@ GLuint sphereShaders[3];
 GLuint sphereProgram;
 float radius;
 
-float mass = 1;
+float mass;
 glm::vec3 CoM;
 
 glm::mat4 objMat;

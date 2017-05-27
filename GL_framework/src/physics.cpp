@@ -1,6 +1,7 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_glfw_gl3.h>
 #include <cstdlib>
+#include <ctime>
 #include <math.h>
 #include <iostream>
 #include <glm\glm.hpp>
@@ -63,7 +64,10 @@ public:
 
 wave wave1;
 
-
+//Variables de control de tiempo:
+float fullTime; //Tiempo total transcurrido desde el inicio de la simulacion (En segundos)
+float simulationTime; //Tiempo que llevamos desde el ultimo reset o inicio de simulacion (En segundos)
+float resetTime = 5.0f; //Tiempo que tiene que pasar para que se resetee la simulacion (En segundos)
 
 bool show_test_window = false;
 
@@ -87,33 +91,6 @@ void GUI() {
 		ImGui::ShowTestWindow(&show_test_window);
 	}
 }
-
-
-/*void GUI() {
-	{	//FrameRate
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		
-
-		//ImGui::DragFloat("Dist second-Link", &D_2Distance, 0.5f, 0.0f, 1.0f);
-		//ImGui::DragFloat("Max % links", &Max_Distance, 0.1f, 0.0f, 1.0f);					//El % maxim qn
-		//ImGui::DragFloat("Dist Vertex X inicial", &InitX, 0.5f, 0.0f, 0.6f);
-		//ImGui::DragFloat("Dist Vertex Z inicial", &InitZ, 0.5f, 0.0f, 0.6f);
-
-		
-
-		//Recorda que si son constants, no es poden modificar!
-		//TODO
-	}
-
-	// ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-	if (show_test_window) {
-		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-		ImGui::ShowTestWindow(&show_test_window);
-	}
-}*/
-
-
-
 
 
 //Punteros a primeras posiciones guardadas para creación de arrays correspondientes:
@@ -185,7 +162,6 @@ void initCloth() {
 
 
 //Variables para clacular la Buoyance
-float fullTime;
 glm::vec3 flotation;
 glm::vec3 ForceSum;
 glm::vec3 Y(0, 0.5, 0);
@@ -197,7 +173,7 @@ vert Close_2;
 vert Close_3;
 vert Close_4;
 
-void Finder() {
+void Finder() { //Funcion que busca los 4 vertices en el array de structs vert, que estan mas cerca de la posicion de la esfera (X y Z)
 	Close_1 = vertsStruct[0];
 	Close_2 = vertsStruct[1];
 	Close_3 = vertsStruct[2];
@@ -258,26 +234,26 @@ void Finder() {
 
 
 void updateSphereStuff(float dt) {
+
 	float Mitja;
-	//Actualizar centro de massa (Posicion):
+	//Actualizar posicion del centro de massa de la esfera:
 	glm::vec3 futureCoM = Sphere::CoM + dt * Sphere::velocity;
 
-	
-	Finder();
-	Mitja = (Close_1.position.y + Close_2.position.y + Close_3.position.y + Close_4.position.y) / 4;
-	cout << Close_1.position.y << " " << Close_2.position.y << " " << Close_3.position.y << " " << Close_4.position.y << endl;
+	Finder(); //Localizar 4 puntos mas cercanos al centro de la esfera
+	Mitja = (Close_1.position.y + Close_2.position.y + Close_3.position.y + Close_4.position.y) / 4; //Media de alturas para conocer la altura del centro del plano que forman los 4 vertices mas cercanos a la esfera
 
-	if ((Sphere::CoM.y - Sphere::radius) >= Mitja) {
+	//cout << Mitja << endl;
+
+	if ((Sphere::CoM.y - Sphere::radius) >= Mitja) { //Si la esfera colisiona con el plano
 		flotation = glm::vec3(0.f, 0.f, 0.f);
 	}
 	else {
 		//Sumatorio de Fuerzas
-		//cout << "done" << endl;
 		Sub_Vol = (Sphere::radius * Sphere::radius) * (Mitja - (Sphere::CoM.y - Sphere::radius));
 		flotation = (Density * G_plus *  Sub_Vol) * Y;
 	}
 	ForceSum = gravity + flotation;
-	//cout << ForceSum.x << " " << ForceSum.y << " " << ForceSum.z << endl;
+
 	//Actualizar velocidad:
 	glm::vec3 futureVel = Sphere::velocity + dt*ForceSum/Sphere::mass;
 
@@ -289,8 +265,6 @@ void updateSphereStuff(float dt) {
 }
 
 void updateClothStuff(float dt) {
-
-	fullTime += dt;
 
 	for (int i = 0; i < ClothMesh::numVerts; ++i) {
 
@@ -331,6 +305,8 @@ void updateClothStuff(float dt) {
 }
 
 void PhysicsInit() {
+	srand(time(0));
+	Sphere::mass = 1+(rand() % 5); //Massa aleatoria de 1 a 5
 
 	initCloth();
 
@@ -339,6 +315,16 @@ void PhysicsInit() {
 }
 
 void PhysicsUpdate(float dt) {
+
+	fullTime += dt;
+	simulationTime += dt;
+	cout << simulationTime << endl;
+
+	if (simulationTime > resetTime) //Reset de simulacion tras 20 segundos
+	{
+		simulationTime = 0.f;
+		PhysicsInit();
+	}
 
 	updateClothStuff(dt);
 	updateSphereStuff(dt);
