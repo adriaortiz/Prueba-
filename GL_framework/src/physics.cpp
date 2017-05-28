@@ -319,7 +319,7 @@ void PhysicsInit() {
 void PhysicsUpdate(float dt) {
 
 	simulationTime += dt;
-	cout << simulationTime << endl;
+	//cout << simulationTime << endl;
 
 	if (simulationTime > resetTime) //Reset de simulacion tras 20 segundos
 	{
