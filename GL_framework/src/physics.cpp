@@ -162,7 +162,11 @@ void initCloth() {
 glm::vec3 flotation;
 glm::vec3 ForceSum;
 glm::vec3 Y(0, 0.5, 0);
-float Density = 2, G_plus = 9.81, Sub_Vol; //G_Plus es la gravetad positiva
+float Density = 2, 
+	  G_plus = 9.81, 
+	  Sub_Vol, 
+	  Sph_Vol, 
+	  Sph_Diam = Sphere::radius * Sphere::radius; //G_Plus es la gravetad positiva
 
 // Los cuatro puntos mas cercanios al centro de masas de la esfera
 vert Close_1;
@@ -245,7 +249,9 @@ void updateSphereStuff(float dt) {
 	}
 	else {
 		//Sumatorio de Fuerzas
-		Sub_Vol = (Sphere::radius * Sphere::radius) * (Mitja - (Sphere::CoM.y - Sphere::radius));
+		Sph_Vol = Sphere::CoM.y - Sphere::radius;
+		if (Sph_Vol > Sph_Diam) Sph_Vol = Sph_Diam;
+		Sub_Vol = Sphere::radius * Sphere::radius * Sphere::radius * Sphere::radius * (Mitja - (Sph_Vol));
 		flotation = (Density * G_plus *  Sub_Vol) * Y;
 	}
 	ForceSum = gravity + flotation;

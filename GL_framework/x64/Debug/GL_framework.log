@@ -1,7 +1,7 @@
 ﻿  physics.cpp
 c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(37): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(85): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(165): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(304): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(305): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(321): error C3861: 'PhysicsCleanup': identifier not found
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(166): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(310): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(311): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(327): error C3861: 'PhysicsCleanup': identifier not found
