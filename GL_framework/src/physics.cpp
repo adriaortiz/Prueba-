@@ -26,6 +26,7 @@ namespace Sphere {
 	extern glm::mat4 objMat;
 	extern void updateSphere(glm::vec3 pos, float radius);
 	extern void setupSphere(glm::vec3 pos, float radius);
+	extern void cleanupSphere();
 	glm::vec3 velocity (0.f,0.f,0.f);
 	extern float radius;
 } 
@@ -62,10 +63,10 @@ public:
 	float Phase;
 };
 
-wave wave1;
+static wave wave1;
+static wave wave2;
 
 //Variables de control de tiempo:
-float fullTime; //Tiempo total transcurrido desde el inicio de la simulacion (En segundos)
 float simulationTime; //Tiempo que llevamos desde el ultimo reset o inicio de simulacion (En segundos)
 float resetTime = 5.0f; //Tiempo que tiene que pasar para que se resetee la simulacion (En segundos)
 
@@ -108,9 +109,7 @@ void initCloth() {
 	vertsStruct = new vert[ClothMesh::numVerts]; //Generando array de vertices actuales
 	vertsFirstStruct = new vert[ClothMesh::numVerts]; //Generando array de primeros vertices (Estado inicial)
 
-													  //Inicializando waves:
-
-	wave wave1;
+	//Inicializando waves predeclaradas:
 
 	wave1.Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	wave1.Kvec = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -118,8 +117,6 @@ void initCloth() {
 	wave1.Ai = 0.5f;
 	wave1.Freq = 2.0f;
 	wave1.Phase = 0.0f;
-
-	wave wave2;
 
 	wave2.Position = glm::vec3(20.0f, 20.0f, 20.0f);
 	wave2.Kvec = glm::vec3(0.0f, 0.0f, -3.0f);
@@ -180,8 +177,7 @@ void Finder() { //Funcion que busca los 4 vertices en el array de structs vert, 
 	Close_4 = vertsStruct[3];
 
 	for (int i = 0; i < ClothMesh::numVerts; i++) {
-		vertsStruct[i].DistVec = glm::abs(Sphere::CoM - vertsStruct[i].position);
-		vertsStruct[i].DistMod = glm::length(vertsStruct[i].DistVec);
+		vertsStruct[i].DistMod = glm::distance(vertsStruct[i].position, Sphere::CoM);
 		if(i > 3)
 		{
 			vert prov;
@@ -277,11 +273,11 @@ void updateClothStuff(float dt) {
 		float waveInfluenceY2;
 
 		//Cada formula de oscilacion de cada wave, individualmente:
-		waveInfluence1 = (Waves[0].Kvec / Waves[0].KiMod) * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * fullTime) + Waves[0].Phase);
-		waveInfluence2 = (Waves[1].Kvec / Waves[1].KiMod) * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * fullTime) + Waves[1].Phase);
+		waveInfluence1 = (Waves[0].Kvec / Waves[0].KiMod) * Waves[0].Ai * glm::sin(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * simulationTime) + Waves[0].Phase);
+		waveInfluence2 = (Waves[1].Kvec / Waves[1].KiMod) * Waves[1].Ai * glm::sin(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * simulationTime) + Waves[1].Phase);
 
-		waveInfluenceY1 = Waves[0].Ai * glm::cos(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * fullTime) + Waves[0].Phase);
-		waveInfluenceY2 = Waves[1].Ai * glm::cos(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * fullTime) + Waves[1].Phase);
+		waveInfluenceY1 = Waves[0].Ai * glm::cos(glm::dot(Waves[0].Kvec, vertsFirstStruct[i].position) - (Waves[0].Freq * simulationTime) + Waves[0].Phase);
+		waveInfluenceY2 = Waves[1].Ai * glm::cos(glm::dot(Waves[1].Kvec, vertsFirstStruct[i].position) - (Waves[1].Freq * simulationTime) + Waves[1].Phase);
 
 		//Debug:
 		//cout << Waves[0].Kvec.x << " " << Waves[0].Kvec.y << " " << Waves[0].Kvec.z << endl;
@@ -316,14 +312,18 @@ void PhysicsInit() {
 
 void PhysicsUpdate(float dt) {
 
-	fullTime += dt;
 	simulationTime += dt;
 	cout << simulationTime << endl;
 
 	if (simulationTime > resetTime) //Reset de simulacion tras 20 segundos
 	{
+		//Limpieza:
+		PhysicsCleanup();
 		simulationTime = 0.f;
+
+		//Reinicio:
 		PhysicsInit();
+
 	}
 
 	updateClothStuff(dt);
@@ -336,4 +336,6 @@ void PhysicsUpdate(float dt) {
 void PhysicsCleanup() {
 	delete[] vertsStruct;
 	delete[] vertsFloat;
+
+	Sphere::cleanupSphere();
 }

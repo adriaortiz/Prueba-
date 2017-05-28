@@ -1,12 +1,7 @@
 ﻿  physics.cpp
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(36): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(84): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(168): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(308): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(309): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(327): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(328): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-  GL_framework.vcxproj -> C:\Users\dylan\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.exe
-  GL_framework.vcxproj -> C:\Users\dylan\Desktop\LocalRepo\Prueba-\GL_framework\x64\Debug\GL_framework.pdb (Partial PDB)
-  0 archivo(s) copiado(s)
-  El nombre de archivo, el nombre de directorio o la sintaxis de la etiqueta del volumen no son correctos.
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(37): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(85): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(165): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(304): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(305): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\dylan\desktop\localrepo\prueba-\gl_framework\src\physics.cpp(321): error C3861: 'PhysicsCleanup': identifier not found
